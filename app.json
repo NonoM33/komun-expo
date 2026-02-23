@@ -30,7 +30,8 @@
       "package": "app.komun.mobile",
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE"
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -52,6 +53,13 @@
           "photosPermission": "Komun a besoin d'accéder à vos photos pour les ajouter à vos publications."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "64c6803f-2c8b-4aff-a6f0-c41e98d22122"
+      }
+    },
+    "owner": "nonom33"
   }
 }

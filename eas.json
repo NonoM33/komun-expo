@@ -12,20 +12,14 @@
       }
     },
     "preview": {
-      "distribution": "internal",
-      "ios": {
-        "simulator": false
-      }
+      "distribution": "internal"
     },
     "production": {
       "autoIncrement": true,
       "ios": {
-        "bundleIdentifier": "app.komun.mobile",
-        "buildConfiguration": "Release",
-        "appleTeamId": "66GH4N82J9"
+        "buildConfiguration": "Release"
       },
       "android": {
-        "package": "app.komun.mobile",
         "buildType": "app-bundle"
       }
     }
@@ -34,7 +28,6 @@
     "production": {
       "ios": {
         "appleId": "renaudlemagicien@gmail.com",
-        "ascAppId": "REPLACE_WITH_ASC_APP_ID",
         "appleTeamId": "66GH4N82J9"
       },
       "android": {
