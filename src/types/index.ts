@@ -1,3 +1,12 @@
+// Author simplifié utilisé dans les posts, comments, messages
+export interface Author {
+  id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url?: string;
+  apartment_number?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -5,12 +14,14 @@ export interface User {
   last_name: string;
   avatar_url?: string;
   phone?: string;
-  floor?: string;
+  floor?: number | string;
   apartment?: string;
+  apartment_number?: string;
   bio?: string;
-  building_id: string;
-  organization_id: string;
-  created_at: string;
+  building_id?: string;
+  organization_id?: string;
+  role?: string;
+  created_at?: string;
 }
 
 export interface AuthTokens {
@@ -36,28 +47,34 @@ export interface Resident {
   first_name: string;
   last_name: string;
   avatar_url?: string;
-  floor?: string;
+  floor?: number | string;
   apartment?: string;
-  phone?: string;
-  email: string;
+  apartment_number?: string;
+  phone?: string | null;
+  email?: string;
+  role?: string;
 }
 
 export interface Post {
   id: string;
+  title?: string;
   content: string;
-  image_url?: string;
-  author: User;
+  image_url?: string | null;
+  author: Author;
   likes_count: number;
   comments_count: number;
-  liked_by_me: boolean;
+  liked?: boolean;
+  liked_by_me?: boolean;
+  category?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface Comment {
   id: string;
   content: string;
-  author: User;
+  author: Author;
+  post_id?: string;
   created_at: string;
 }
 
@@ -65,15 +82,18 @@ export interface Channel {
   id: string;
   name: string;
   description?: string;
-  last_message?: Message;
+  last_message?: string | Message;
+  last_message_at?: string;
   unread_count: number;
-  created_at: string;
+  members_count?: number;
+  icon?: string;
+  created_at?: string;
 }
 
 export interface Message {
   id: string;
   content: string;
-  author: User;
+  author: Author;
   channel_id: string;
   created_at: string;
 }

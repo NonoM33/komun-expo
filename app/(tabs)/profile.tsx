@@ -118,11 +118,11 @@ export default function ProfileScreen() {
             <>
               <Text style={styles.name}>{fullName}</Text>
               <Text style={styles.email}>{user.email}</Text>
-              {(user.floor || user.apartment) && (
+              {(user.floor || user.apartment || user.apartment_number) && (
                 <View style={styles.locationRow}>
                   <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
                   <Text style={styles.location}>
-                    {[user.floor && `Étage ${user.floor}`, user.apartment && `Apt ${user.apartment}`]
+                    {[user.floor && `Étage ${user.floor}`, (user.apartment || user.apartment_number) && `Apt ${user.apartment || user.apartment_number}`]
                       .filter(Boolean)
                       .join(' • ')}
                   </Text>

@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { Channel, Message } from '../types';
 import api from '../services/api';
+import { MOCK_CHANNELS, MOCK_MESSAGES } from '../services/mockData';
+
+const DEMO_MODE = true;
 
 interface ChannelsState {
   channels: Channel[];
@@ -36,20 +39,33 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
 
   fetchChannels: async () => {
     set({ isLoading: true });
+
+    if (DEMO_MODE) {
+      set({ channels: MOCK_CHANNELS, isLoading: false });
+      return;
+    }
+
     try {
       const channels = await api.getChannels();
       set({ channels, isLoading: false });
     } catch (error) {
-      set({ isLoading: false });
+      set({ channels: MOCK_CHANNELS, isLoading: false });
     }
   },
 
   fetchChannel: async (id: string) => {
+    if (DEMO_MODE) {
+      const channel = MOCK_CHANNELS.find((c) => c.id === id) || null;
+      set({ currentChannel: channel });
+      return;
+    }
+
     try {
       const channel = await api.getChannel(id);
       set({ currentChannel: channel });
     } catch (error) {
-      console.error('Error fetching channel:', error);
+      const channel = MOCK_CHANNELS.find((c) => c.id === id) || null;
+      set({ currentChannel: channel });
     }
   },
 
@@ -58,6 +74,17 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
       set({ isLoadingMessages: true, currentPage: 1, messages: [] });
     } else {
       set({ isLoadingMessages: true });
+    }
+
+    if (DEMO_MODE) {
+      const messages = MOCK_MESSAGES.filter((m) => m.channel_id === channelId);
+      set({
+        messages,
+        currentPage: 1,
+        hasMoreMessages: false,
+        isLoadingMessages: false,
+      });
+      return;
     }
 
     try {
@@ -69,11 +96,19 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
         isLoadingMessages: false,
       });
     } catch (error) {
-      set({ isLoadingMessages: false });
+      const messages = MOCK_MESSAGES.filter((m) => m.channel_id === channelId);
+      set({
+        messages,
+        currentPage: 1,
+        hasMoreMessages: false,
+        isLoadingMessages: false,
+      });
     }
   },
 
   fetchMoreMessages: async (channelId: string) => {
+    if (DEMO_MODE) return;
+
     const { isLoadingMessages, hasMoreMessages, currentPage } = get();
     if (isLoadingMessages || !hasMoreMessages) return;
 
@@ -94,6 +129,25 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
 
   sendMessage: async (channelId: string, content: string) => {
     set({ isSending: true });
+
+    if (DEMO_MODE) {
+      const message: Message = {
+        id: String(Date.now()),
+        content,
+        author: { id: '1', first_name: 'Renaud', last_name: 'Cosson', avatar_url: 'https://i.pravatar.cc/300?img=12' },
+        channel_id: channelId,
+        created_at: new Date().toISOString(),
+      };
+      set((state) => ({
+        messages: [...state.messages, message],
+        isSending: false,
+        channels: state.channels.map((ch) =>
+          ch.id === channelId ? { ...ch, last_message: `Renaud: ${content}`, last_message_at: message.created_at } : ch
+        ),
+      }));
+      return;
+    }
+
     try {
       const message = await api.sendMessage(channelId, { content });
       set((state) => ({
@@ -114,6 +168,8 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
   },
 
   startPolling: (channelId: string) => {
+    if (DEMO_MODE) return;
+
     const { pollingInterval } = get();
     if (pollingInterval) {
       clearInterval(pollingInterval);
@@ -126,7 +182,6 @@ export const useChannelsStore = create<ChannelsState>((set, get) => ({
         const { messages: currentMessages } = get();
 
         if (newMessages.length > 0) {
-          const lastCurrentId = currentMessages[currentMessages.length - 1]?.id;
           const newOnes = newMessages.filter(
             (m) => !currentMessages.some((cm) => cm.id === m.id)
           );

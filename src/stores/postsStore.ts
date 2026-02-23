@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { Post, Comment } from '../types';
 import api from '../services/api';
+import { MOCK_POSTS, MOCK_COMMENTS } from '../services/mockData';
+
+const DEMO_MODE = true;
 
 interface PostsState {
   posts: Post[];
@@ -45,6 +48,17 @@ export const usePostsStore = create<PostsState>((set, get) => ({
       set({ isLoading: true });
     }
 
+    if (DEMO_MODE) {
+      set({
+        posts: MOCK_POSTS,
+        currentPage: 1,
+        hasMore: false,
+        isLoading: false,
+        error: null,
+      });
+      return;
+    }
+
     try {
       const response = await api.getPosts(1);
       set({
@@ -55,14 +69,20 @@ export const usePostsStore = create<PostsState>((set, get) => ({
         error: null,
       });
     } catch (error: any) {
+      // Fallback to mock data on error
       set({
-        error: error.message || 'Erreur lors du chargement des publications',
+        posts: MOCK_POSTS,
+        currentPage: 1,
+        hasMore: false,
         isLoading: false,
+        error: null,
       });
     }
   },
 
   fetchMorePosts: async () => {
+    if (DEMO_MODE) return;
+
     const { isLoadingMore, hasMore, currentPage } = get();
     if (isLoadingMore || !hasMore) return;
 
@@ -83,19 +103,43 @@ export const usePostsStore = create<PostsState>((set, get) => ({
 
   fetchPost: async (id: string) => {
     set({ isLoading: true });
+
+    if (DEMO_MODE) {
+      const post = MOCK_POSTS.find((p) => p.id === id) || null;
+      set({ currentPost: post, isLoading: false });
+      return;
+    }
+
     try {
       const post = await api.getPost(id);
       set({ currentPost: post, isLoading: false });
     } catch (error: any) {
-      set({
-        error: error.message || 'Erreur lors du chargement de la publication',
-        isLoading: false,
-      });
+      const post = MOCK_POSTS.find((p) => p.id === id) || null;
+      set({ currentPost: post, isLoading: false });
     }
   },
 
   createPost: async (content: string, image?: string) => {
     set({ isCreating: true, error: null });
+
+    if (DEMO_MODE) {
+      const newPost: Post = {
+        id: String(Date.now()),
+        content,
+        image_url: image || null,
+        author: { id: '1', first_name: 'Renaud', last_name: 'Cosson', avatar_url: 'https://i.pravatar.cc/300?img=12', apartment_number: '4B' },
+        likes_count: 0,
+        comments_count: 0,
+        liked: false,
+        created_at: new Date().toISOString(),
+      };
+      set((state) => ({
+        posts: [newPost, ...state.posts],
+        isCreating: false,
+      }));
+      return;
+    }
+
     try {
       const newPost = await api.createPost({ content, image });
       set((state) => ({
@@ -116,13 +160,14 @@ export const usePostsStore = create<PostsState>((set, get) => ({
     const post = posts.find((p) => p.id === postId) || currentPost;
     if (!post) return;
 
-    const wasLiked = post.liked_by_me;
+    const wasLiked = post.liked ?? post.liked_by_me ?? false;
 
     // Optimistic update
     const updatePost = (p: Post): Post =>
       p.id === postId
         ? {
             ...p,
+            liked: !wasLiked,
             liked_by_me: !wasLiked,
             likes_count: wasLiked ? p.likes_count - 1 : p.likes_count + 1,
           }
@@ -132,6 +177,8 @@ export const usePostsStore = create<PostsState>((set, get) => ({
       posts: state.posts.map(updatePost),
       currentPost: state.currentPost?.id === postId ? updatePost(state.currentPost) : state.currentPost,
     }));
+
+    if (DEMO_MODE) return;
 
     try {
       if (wasLiked) {
@@ -146,6 +193,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
           p.id === postId
             ? {
                 ...p,
+                liked: wasLiked,
                 liked_by_me: wasLiked,
                 likes_count: wasLiked ? p.likes_count + 1 : p.likes_count - 1,
               }
@@ -155,6 +203,7 @@ export const usePostsStore = create<PostsState>((set, get) => ({
           state.currentPost?.id === postId
             ? {
                 ...state.currentPost,
+                liked: wasLiked,
                 liked_by_me: wasLiked,
                 likes_count: wasLiked ? state.currentPost.likes_count + 1 : state.currentPost.likes_count - 1,
               }
@@ -165,15 +214,44 @@ export const usePostsStore = create<PostsState>((set, get) => ({
 
   fetchComments: async (postId: string) => {
     set({ isLoadingComments: true });
+
+    if (DEMO_MODE) {
+      const comments = MOCK_COMMENTS.filter((c) => c.post_id === postId);
+      set({ comments, isLoadingComments: false });
+      return;
+    }
+
     try {
       const response = await api.getComments(postId);
       set({ comments: response.data, isLoadingComments: false });
     } catch (error) {
-      set({ isLoadingComments: false });
+      const comments = MOCK_COMMENTS.filter((c) => c.post_id === postId);
+      set({ comments, isLoadingComments: false });
     }
   },
 
   addComment: async (postId: string, content: string) => {
+    if (DEMO_MODE) {
+      const newComment: Comment = {
+        id: String(Date.now()),
+        content,
+        author: { id: '1', first_name: 'Renaud', last_name: 'Cosson', avatar_url: 'https://i.pravatar.cc/300?img=12' },
+        post_id: postId,
+        created_at: new Date().toISOString(),
+      };
+      set((state) => ({
+        comments: [...state.comments, newComment],
+        posts: state.posts.map((p) =>
+          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+        ),
+        currentPost:
+          state.currentPost?.id === postId
+            ? { ...state.currentPost, comments_count: state.currentPost.comments_count + 1 }
+            : state.currentPost,
+      }));
+      return;
+    }
+
     try {
       const newComment = await api.createComment(postId, content);
       set((state) => ({

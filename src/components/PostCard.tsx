@@ -65,14 +65,14 @@ export function PostCard({ post, onPress, onLike, onComment }: PostCardProps) {
           activeOpacity={0.7}
         >
           <Ionicons
-            name={post.liked_by_me ? 'heart' : 'heart-outline'}
+            name={(post.liked ?? post.liked_by_me) ? 'heart' : 'heart-outline'}
             size={22}
-            color={post.liked_by_me ? colors.like : colors.textSecondary}
+            color={(post.liked ?? post.liked_by_me) ? colors.like : colors.textSecondary}
           />
           <Text
             style={[
               styles.actionText,
-              post.liked_by_me && styles.actionTextActive,
+              (post.liked ?? post.liked_by_me) && styles.actionTextActive,
             ]}
           >
             {post.likes_count}

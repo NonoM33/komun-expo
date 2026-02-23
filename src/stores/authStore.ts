@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { User } from '../types';
 import api from '../services/api';
+import { MOCK_USER } from '../services/mockData';
+
+const DEMO_MODE = true;
 
 interface AuthState {
   user: User | null;
@@ -31,6 +34,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   initialize: async () => {
+    if (DEMO_MODE) {
+      set({ user: MOCK_USER, isAuthenticated: true, isInitialized: true });
+      return;
+    }
+
     try {
       const hasToken = await api.hasValidToken();
       if (hasToken) {
@@ -46,6 +54,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
+    if (DEMO_MODE) {
+      set({ user: MOCK_USER, isAuthenticated: true, isLoading: false });
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
       const { user } = await api.login({ email, password });
@@ -58,6 +71,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (data) => {
+    if (DEMO_MODE) {
+      set({ user: MOCK_USER, isAuthenticated: true, isLoading: false });
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
       const { user } = await api.register(data);
@@ -70,6 +88,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    if (DEMO_MODE) {
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      return;
+    }
+
     set({ isLoading: true });
     try {
       await api.logout();

@@ -64,9 +64,9 @@ export default function MessagesScreen() {
           <Text style={styles.channelName} numberOfLines={1}>
             {item.name}
           </Text>
-          {item.last_message && (
+          {(item.last_message_at || (typeof item.last_message === 'object' && item.last_message?.created_at)) && (
             <Text style={styles.channelTime}>
-              {formatDate(item.last_message.created_at)}
+              {formatDate(item.last_message_at || (typeof item.last_message === 'object' ? item.last_message?.created_at : undefined))}
             </Text>
           )}
         </View>
@@ -74,10 +74,17 @@ export default function MessagesScreen() {
         <View style={styles.channelPreview}>
           {item.last_message ? (
             <Text style={styles.lastMessage} numberOfLines={1}>
-              <Text style={styles.lastMessageAuthor}>
-                {item.last_message.author.first_name}:{' '}
-              </Text>
-              {item.last_message.content}
+              {typeof item.last_message === 'string'
+                ? item.last_message
+                : (
+                  <>
+                    <Text style={styles.lastMessageAuthor}>
+                      {item.last_message.author.first_name}:{' '}
+                    </Text>
+                    {item.last_message.content}
+                  </>
+                )
+              }
             </Text>
           ) : (
             <Text style={styles.noMessages}>Aucun message</Text>

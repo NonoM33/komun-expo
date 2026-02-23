@@ -152,14 +152,14 @@ export default function PostDetailScreen() {
               onPress={() => toggleLike(currentPost.id)}
             >
               <Ionicons
-                name={currentPost.liked_by_me ? 'heart' : 'heart-outline'}
+                name={(currentPost.liked ?? currentPost.liked_by_me) ? 'heart' : 'heart-outline'}
                 size={24}
-                color={currentPost.liked_by_me ? colors.like : colors.textSecondary}
+                color={(currentPost.liked ?? currentPost.liked_by_me) ? colors.like : colors.textSecondary}
               />
               <Text
                 style={[
                   styles.actionText,
-                  currentPost.liked_by_me && styles.actionTextActive,
+                  (currentPost.liked ?? currentPost.liked_by_me) && styles.actionTextActive,
                 ]}
               >
                 {currentPost.likes_count} J'aime

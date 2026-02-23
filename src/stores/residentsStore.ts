@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { Resident } from '../types';
 import api from '../services/api';
+import { MOCK_RESIDENTS } from '../services/mockData';
+
+const DEMO_MODE = true;
 
 interface ResidentsState {
   residents: Resident[];
@@ -23,6 +26,16 @@ export const useResidentsStore = create<ResidentsState>((set, get) => ({
 
   fetchResidents: async () => {
     set({ isLoading: true, error: null });
+
+    if (DEMO_MODE) {
+      set({
+        residents: MOCK_RESIDENTS,
+        filteredResidents: MOCK_RESIDENTS,
+        isLoading: false,
+      });
+      return;
+    }
+
     try {
       const residents = await api.getResidents();
       set({
@@ -32,7 +45,8 @@ export const useResidentsStore = create<ResidentsState>((set, get) => ({
       });
     } catch (error: any) {
       set({
-        error: error.message || 'Erreur lors du chargement des résidents',
+        residents: MOCK_RESIDENTS,
+        filteredResidents: MOCK_RESIDENTS,
         isLoading: false,
       });
     }
@@ -49,8 +63,8 @@ export const useResidentsStore = create<ResidentsState>((set, get) => ({
 
     const filtered = residents.filter((resident) => {
       const fullName = `${resident.first_name} ${resident.last_name}`.toLowerCase();
-      const apartment = resident.apartment?.toLowerCase() || '';
-      const floor = resident.floor?.toLowerCase() || '';
+      const apartment = (resident.apartment || resident.apartment_number || '').toLowerCase();
+      const floor = String(resident.floor || '').toLowerCase();
 
       return (
         fullName.includes(normalizedQuery) ||

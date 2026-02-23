@@ -51,10 +51,10 @@ export default function ResidentsScreen() {
               <Text style={styles.detailText}>Étage {item.floor}</Text>
             </View>
           )}
-          {item.apartment && (
+          {(item.apartment || item.apartment_number) && (
             <View style={styles.detailTag}>
               <Ionicons name="home-outline" size={14} color={colors.textSecondary} />
-              <Text style={styles.detailText}>Apt {item.apartment}</Text>
+              <Text style={styles.detailText}>Apt {item.apartment || item.apartment_number}</Text>
             </View>
           )}
         </View>
