@@ -1,0 +1,146 @@
+import { useEffect, useCallback } from 'react';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { PostCard, SkeletonPost, EmptyState } from '../../src/components';
+import { usePostsStore } from '../../src/stores/postsStore';
+import { colors, spacing } from '../../src/utils/theme';
+
+export default function HomeScreen() {
+  const {
+    posts,
+    isLoading,
+    isLoadingMore,
+    fetchPosts,
+    fetchMorePosts,
+    toggleLike,
+  } = usePostsStore();
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    fetchPosts(true);
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore) {
+      fetchMorePosts();
+    }
+  }, [isLoadingMore]);
+
+  const handlePostPress = (postId: string) => {
+    router.push(`/post/${postId}`);
+  };
+
+  const handleCreatePost = () => {
+    router.push('/post/create');
+  };
+
+  const renderItem = ({ item }: { item: typeof posts[0] }) => (
+    <PostCard
+      post={item}
+      onPress={() => handlePostPress(item.id)}
+      onLike={() => toggleLike(item.id)}
+      onComment={() => handlePostPress(item.id)}
+    />
+  );
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={styles.footer}>
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  };
+
+  if (isLoading && posts.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.skeletonContainer}>
+          <SkeletonPost count={4} />
+        </View>
+        <TouchableOpacity style={styles.fab} onPress={handleCreatePost}>
+          <Ionicons name="add" size={28} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={posts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={
+          <EmptyState
+            icon="newspaper-outline"
+            title="Aucune publication"
+            message="Soyez le premier à partager quelque chose avec vos voisins !"
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      />
+
+      <TouchableOpacity style={styles.fab} onPress={handleCreatePost}>
+        <Ionicons name="add" size={28} color={colors.text} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  list: {
+    padding: spacing.md,
+    paddingBottom: 100,
+  },
+  skeletonContainer: {
+    padding: spacing.md,
+  },
+  footer: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+});
