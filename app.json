@@ -18,7 +18,8 @@
       "bundleIdentifier": "app.komun.mobile",
       "infoPlist": {
         "NSCameraUsageDescription": "Komun utilise la caméra pour scanner les codes QR d'invitation.",
-        "NSPhotoLibraryUsageDescription": "Komun a besoin d'accéder à vos photos pour les ajouter à vos publications."
+        "NSPhotoLibraryUsageDescription": "Komun a besoin d'accéder à vos photos pour les ajouter à vos publications.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
