@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.komun.app",
+      "bundleIdentifier": "app.komun.mobile",
       "infoPlist": {
         "NSCameraUsageDescription": "Komun utilise la cam\u00e9ra pour scanner les codes QR d'invitation.",
         "NSPhotoLibraryUsageDescription": "Komun a besoin d'acc\u00e9der \u00e0 vos photos pour les ajouter \u00e0 vos publications.",
@@ -28,7 +28,7 @@
         "backgroundColor": "#0A0A0F"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.komun.app",
+      "package": "app.komun.mobile",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
