@@ -8,9 +8,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Avatar, Button, Input, Card } from '../../src/components';
 import { useAuthStore } from '../../src/stores/authStore';
 import api from '../../src/services/api';
@@ -26,6 +29,12 @@ export default function ProfileScreen() {
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [newAvatar, setNewAvatar] = useState<string | null>(null);
+
+  // Account deletion state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -83,6 +92,35 @@ export default function ProfileScreen() {
         },
       ]
     );
+  };
+
+  const handleDeleteAccount = () => {
+    setDeletePassword('');
+    setDeleteError(null);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      setDeleteError('Mot de passe requis');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await api.deleteAccount(deletePassword);
+      setShowDeleteModal(false);
+      // Clear auth state and redirect to login
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'Mot de passe incorrect ou erreur serveur';
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!user) return null;
@@ -211,10 +249,67 @@ export default function ProfileScreen() {
                 <Text style={[styles.actionText, styles.logoutText]}>Déconnexion</Text>
                 <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
               </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.actionItem, styles.lastActionItem]} onPress={handleDeleteAccount}>
+                <View style={[styles.actionIcon, styles.deleteIcon]}>
+                  <Ionicons name="trash-outline" size={22} color={colors.error} />
+                </View>
+                <Text style={[styles.actionText, styles.logoutText]}>Supprimer mon compte</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
             </View>
           </>
         )}
       </ScrollView>
+
+      {/* Delete Account Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalWarningIcon}>
+                <Ionicons name="warning" size={32} color={colors.error} />
+              </View>
+              <Text style={styles.modalTitle}>Supprimer mon compte</Text>
+              <Text style={styles.modalDescription}>
+                Cette action est irréversible. Toutes vos données seront définitivement supprimées.
+              </Text>
+            </View>
+
+            <Input
+              label="Confirmez avec votre mot de passe"
+              placeholder="Mot de passe"
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              secureTextEntry
+              leftIcon="lock-closed-outline"
+              error={deleteError || undefined}
+            />
+
+            <View style={styles.modalButtons}>
+              <Button
+                title="Annuler"
+                onPress={() => setShowDeleteModal(false)}
+                variant="secondary"
+                style={styles.modalButton}
+                disabled={isDeleting}
+              />
+              <Button
+                title={isDeleting ? 'Suppression...' : 'Supprimer'}
+                onPress={confirmDeleteAccount}
+                variant="primary"
+                style={[styles.modalButton, styles.deleteButton]}
+                loading={isDeleting}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -345,5 +440,64 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
+  },
+  lastActionItem: {
+    borderBottomWidth: 0,
+  },
+  deleteIcon: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  modalWarningIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
+  },
+  modalButton: {
+    flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: colors.error,
   },
 });

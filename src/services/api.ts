@@ -310,6 +310,12 @@ class ApiService {
   async markNotificationRead(id: string): Promise<void> {
     await this.client.patch(`/notifications/${id}/read`);
   }
+
+  // Account deletion
+  async deleteAccount(password: string): Promise<void> {
+    await this.client.delete('/account', { data: { password } });
+    await this.clearTokens();
+  }
 }
 
 export const api = new ApiService();
