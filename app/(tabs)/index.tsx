@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   FlatList,
@@ -6,11 +6,13 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { PostCard, SkeletonPost, EmptyState } from '../../src/components';
 import { usePostsStore } from '../../src/stores/postsStore';
+import { useBlockedUsersStore } from '../../src/stores/blockedUsersStore';
 import { colors, spacing } from '../../src/utils/theme';
 
 export default function HomeScreen() {
@@ -23,12 +25,21 @@ export default function HomeScreen() {
     toggleLike,
   } = usePostsStore();
 
+  const { blockedUserIds, fetchBlockedUsers, blockUser } = useBlockedUsersStore();
+
   useEffect(() => {
     fetchPosts();
+    fetchBlockedUsers();
   }, []);
+
+  // Filter out posts from blocked users
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => !blockedUserIds.has(post.author.id));
+  }, [posts, blockedUserIds]);
 
   const handleRefresh = useCallback(() => {
     fetchPosts(true);
+    fetchBlockedUsers();
   }, []);
 
   const handleLoadMore = useCallback(() => {
@@ -45,12 +56,22 @@ export default function HomeScreen() {
     router.push('/post/create');
   };
 
+  const handleBlockUser = async (userId: string) => {
+    try {
+      await blockUser(userId);
+      Alert.alert('Utilisateur bloqué', 'Vous ne verrez plus les publications de cet utilisateur.');
+    } catch (error: any) {
+      Alert.alert('Erreur', error.message || 'Impossible de bloquer cet utilisateur.');
+    }
+  };
+
   const renderItem = ({ item }: { item: typeof posts[0] }) => (
     <PostCard
       post={item}
       onPress={() => handlePostPress(item.id)}
       onLike={() => toggleLike(item.id)}
       onComment={() => handlePostPress(item.id)}
+      onBlockUser={handleBlockUser}
     />
   );
 
@@ -79,7 +100,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={posts}
+        data={filteredPosts}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}

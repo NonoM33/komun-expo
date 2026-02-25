@@ -16,6 +16,8 @@ import {
   CreateMessageRequest,
   UpdateProfileRequest,
   Organization,
+  Block,
+  CreateReportRequest,
 } from '../types';
 
 const BASE_URL = 'https://api.komun.app/api/v1';
@@ -315,6 +317,26 @@ class ApiService {
   async deleteAccount(password: string): Promise<void> {
     await this.client.delete('/account', { data: { password } });
     await this.clearTokens();
+  }
+
+  // Reports
+  async createReport(data: CreateReportRequest): Promise<void> {
+    await this.client.post('/reports', data);
+  }
+
+  // Blocks
+  async getBlocks(): Promise<Block[]> {
+    const response = await this.client.get<Block[]>('/blocks');
+    return response.data;
+  }
+
+  async createBlock(blocked_user_id: string): Promise<Block> {
+    const response = await this.client.post<Block>('/blocks', { blocked_user_id });
+    return response.data;
+  }
+
+  async deleteBlock(id: string): Promise<void> {
+    await this.client.delete(`/blocks/${id}`);
   }
 }
 

@@ -142,3 +142,16 @@ export interface UpdateProfileRequest {
   bio?: string;
   avatar?: string;
 }
+
+export interface Block {
+  id: string;
+  blocked_user_id: string;
+  blocked_user: Author;
+  created_at: string;
+}
+
+export interface CreateReportRequest {
+  reason: string;
+  reportable_type: 'Post' | 'Message' | 'Comment';
+  reportable_id: string;
+}

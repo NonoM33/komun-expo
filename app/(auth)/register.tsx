@@ -26,6 +26,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -72,6 +73,9 @@ export default function RegisterScreen() {
       newErrors.password = 'Mot de passe requis';
     } else if (password.length < 8) {
       newErrors.password = 'Minimum 8 caractères';
+    }
+    if (!acceptedTerms) {
+      newErrors.terms = 'Vous devez accepter les conditions';
     }
 
     setErrors(newErrors);
@@ -232,6 +236,26 @@ export default function RegisterScreen() {
               error={errors.password}
             />
 
+            {/* Terms and Conditions checkbox */}
+            <TouchableOpacity
+              style={styles.termsContainer}
+              onPress={() => setAcceptedTerms(!acceptedTerms)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                {acceptedTerms && (
+                  <Ionicons name="checkmark" size={16} color={colors.text} />
+                )}
+              </View>
+              <Text style={styles.termsText}>
+                J'accepte les{' '}
+                <Text style={styles.termsLink}>Conditions d'utilisation</Text>
+                {' '}et la{' '}
+                <Text style={styles.termsLink}>Politique de confidentialité</Text>
+              </Text>
+            </TouchableOpacity>
+            {errors.terms && <Text style={styles.termsError}>{errors.terms}</Text>}
+
             {error && <Text style={styles.errorText}>{error}</Text>}
 
             <Button
@@ -239,6 +263,7 @@ export default function RegisterScreen() {
               onPress={handleRegister}
               loading={isLoading}
               style={styles.registerButton}
+              disabled={!acceptedTerms}
             />
           </View>
         </ScrollView>
@@ -349,5 +374,42 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     marginTop: spacing.md,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: borderRadius.sm,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  termsText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  termsLink: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  termsError: {
+    color: colors.error,
+    fontSize: 12,
+    marginBottom: spacing.sm,
+    marginLeft: 32,
   },
 });
