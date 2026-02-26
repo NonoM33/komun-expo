@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -237,23 +238,34 @@ export default function RegisterScreen() {
             />
 
             {/* Terms and Conditions checkbox */}
-            <TouchableOpacity
-              style={styles.termsContainer}
-              onPress={() => setAcceptedTerms(!acceptedTerms)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                {acceptedTerms && (
-                  <Ionicons name="checkmark" size={16} color={colors.text} />
-                )}
-              </View>
+            <View style={styles.termsContainer}>
+              <TouchableOpacity
+                onPress={() => setAcceptedTerms(!acceptedTerms)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                  {acceptedTerms && (
+                    <Ionicons name="checkmark" size={16} color={colors.text} />
+                  )}
+                </View>
+              </TouchableOpacity>
               <Text style={styles.termsText}>
                 J'accepte les{' '}
-                <Text style={styles.termsLink}>Conditions d'utilisation</Text>
+                <Text
+                  style={styles.termsLink}
+                  onPress={() => Linking.openURL('https://api.komun.app/terms')}
+                >
+                  Conditions Générales d'Utilisation
+                </Text>
                 {' '}et la{' '}
-                <Text style={styles.termsLink}>Politique de confidentialité</Text>
+                <Text
+                  style={styles.termsLink}
+                  onPress={() => Linking.openURL('https://api.komun.app/privacy')}
+                >
+                  Politique de Confidentialité
+                </Text>
               </Text>
-            </TouchableOpacity>
+            </View>
             {errors.terms && <Text style={styles.termsError}>{errors.terms}</Text>}
 
             {error && <Text style={styles.errorText}>{error}</Text>}

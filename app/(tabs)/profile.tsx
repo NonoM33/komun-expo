@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -253,14 +254,44 @@ export default function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionItem} onPress={handleLogout}>
+              <TouchableOpacity style={[styles.actionItem, styles.lastActionItem]} onPress={handleLogout}>
                 <View style={[styles.actionIcon, styles.logoutIcon]}>
                   <Ionicons name="log-out-outline" size={22} color={colors.error} />
                 </View>
                 <Text style={[styles.actionText, styles.logoutText]}>Déconnexion</Text>
                 <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
               </TouchableOpacity>
+            </View>
 
+            {/* Legal Section */}
+            <Text style={styles.sectionTitle}>Légal</Text>
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.actionItem}
+                onPress={() => Linking.openURL('https://api.komun.app/terms')}
+              >
+                <View style={styles.actionIcon}>
+                  <Ionicons name="document-text-outline" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.actionText}>Conditions Générales d'Utilisation</Text>
+                <Ionicons name="open-outline" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionItem, styles.lastActionItem]}
+                onPress={() => Linking.openURL('https://api.komun.app/privacy')}
+              >
+                <View style={styles.actionIcon}>
+                  <Ionicons name="shield-checkmark-outline" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.actionText}>Politique de Confidentialité</Text>
+                <Ionicons name="open-outline" size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Danger Zone */}
+            <Text style={styles.sectionTitle}>Zone de danger</Text>
+            <View style={styles.actions}>
               <TouchableOpacity style={[styles.actionItem, styles.lastActionItem]} onPress={handleDeleteAccount}>
                 <View style={[styles.actionIcon, styles.deleteIcon]}>
                   <Ionicons name="trash-outline" size={22} color={colors.error} />
@@ -392,6 +423,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
     lineHeight: 22,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   actions: {
     backgroundColor: colors.surface,
